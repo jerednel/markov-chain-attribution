@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: markov-model-attribution
+Version: 0.1
+Summary: A way to build markov-based attribution models in Python.
+Home-page: https://github.com/jerednel/markov-chain-attribution
+Author: Jeremy Nelson
+Author-email: jeremy@fastmail.mx
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN

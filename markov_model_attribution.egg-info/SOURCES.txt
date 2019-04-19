@@ -1,0 +1,8 @@
+setup.cfg
+setup.py
+markov_model_attribution/__init__.py
+markov_model_attribution.egg-info/PKG-INFO
+markov_model_attribution.egg-info/SOURCES.txt
+markov_model_attribution.egg-info/dependency_links.txt
+markov_model_attribution.egg-info/not-zip-safe
+markov_model_attribution.egg-info/top_level.txt
