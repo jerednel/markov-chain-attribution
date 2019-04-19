@@ -1,0 +1,5 @@
+.idea
+/build/lib/markov_model_attribution/
+/markov_model_attribution.egg-info/
+/dist/
+.DS_Store
