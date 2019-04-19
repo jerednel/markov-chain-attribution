@@ -3,3 +3,5 @@
 /markov_model_attribution.egg-info/
 /dist/
 .DS_Store
+setup.py
+setup.cfg
