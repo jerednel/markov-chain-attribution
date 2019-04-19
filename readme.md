@@ -61,9 +61,7 @@ print(model['last_touch_conversions'])
 # {'pro': 0, 'rem': 2, 'sem': 2}
 ```
 
-You can also access the transition matrix that of the state changes for your data.
-
-The columns containing "minus" represent the removal affect transition matrix.
+You can also access the removal effect matrix of the underlying result.  
 
 ```python
 print(model['transition_matrix'])
