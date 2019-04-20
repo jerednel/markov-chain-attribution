@@ -4,7 +4,7 @@ This is a proof-of-concept I built out that leverages a first order Markov chain
 
 If this concept is new, check out the post on [markov chain attribution modeling](https://www.jnel.me/how-to-leverage-markov-chains-for-attribution/).   
 
-In this package we run simulations of user journeys based on the values of the transition matrix to derive the removal effect conversion rate.  The higher the number of simulations the longer it takes since it needs to be run for each channel or tactic that you pass to the model.
+In this package we run simulations of user journeys based on the values of the transition matrix to derive the removal effect conversion rate.  The higher the number of simulations the longer it takes since it needs to be run for each channel or tactic that you pass to the model.  Higher simulation sizes are required, however, the larger your data get and the more potential transition states exist between the different channels.  I have found that for a month or so of real website data, ```niter=5000``` tends to give reasonable results, however it does take a while to run through these (about a minute or two).
 
 ### Motivation
 
