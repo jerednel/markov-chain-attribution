@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re
 
 def run_model(paths, niter):
     markov_conversions = first_order(paths, niter)

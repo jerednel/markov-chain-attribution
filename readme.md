@@ -35,7 +35,7 @@ df = pd.DataFrame({'Paths':['start > rem > rem > conv',
                            'start > pro > null',
                            'start > sem > conv',
                            'start > pro > pro > sem > rem > conv',
-                           'start > pro > pro > null'
+                           'start > pro > pro > null',
                            'start > aff > rem > conv',
                            'start > pro > pro > null',
                            'start > sem > sem > null']})
