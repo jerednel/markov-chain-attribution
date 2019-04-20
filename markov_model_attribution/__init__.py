@@ -3,6 +3,9 @@ import numpy as np
 import re
 
 def run_model(paths, niter):
+    regex = re.compile('[^a-zA-Z> ]')
+    paths.rename(columns={paths.columns[0]: "Paths"}, inplace=True)
+    paths['Paths'] = paths['Paths'].apply(lambda x: regex.sub('', x))
     markov_conversions = first_order(paths, niter)
     return markov_conversions
 
