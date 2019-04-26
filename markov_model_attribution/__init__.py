@@ -102,6 +102,7 @@ def first_order(paths, niter):
             df['minus_' + row] = np.where(df['paths'].str.contains(row + '>'), 0, df['prob'])
 
     removal_cvr_dict = {}
+    print(unique_touch_list)
     for row in unique_touch_list:
         if row != 'conv' and row != 'null' and row != 'start':
             print("Running simulations for removal of " + row)
@@ -129,7 +130,7 @@ def first_order(paths, niter):
                             activityList.append(activityNow)
                 conv_sim_array.append(activityList)
 
-            # print(conv_sim_array)
+            #print(conv_sim_array)
             count = 0
             for smaller_list in conv_sim_array:
                 if (smaller_list[-1] == "conv"):
@@ -157,4 +158,5 @@ def first_order(paths, niter):
     return {'markov_conversions': markov_attributed_conversions,
             'removal_cvr': removal_cvr_dict,
             'last_touch_conversions': conv_dict,
-            'transition_matrix': df}
+            'transition_matrix': df,
+           'initial_cvr': initial_cvr}
