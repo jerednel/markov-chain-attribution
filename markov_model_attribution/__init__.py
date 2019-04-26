@@ -143,20 +143,36 @@ def first_order(paths, niter):
     for k in removal_cvr_dict:
         removal_effect_dict[k] = removal_cvr_dict[k] / initial_cvr - 1
         weighting_denominator += removal_cvr_dict[k] / initial_cvr - 1
+    removal_effect_dict = {k: 0 if v > 0 else v for k, v in removal_effect_dict.items() }
     #print("initial CVR: %f" % (initial_cvr))
     #print("Removal CVR Dict: %s" % (removal_cvr_dict))
     #print("Weighing denominator: %f " % (weighting_denominator))
     fractional_multiplier_dict = {}
     markov_attributed_conversions = {}
+    decimal_markov = {}
     for k in removal_effect_dict:
         #print(removal_effect_dict[k])
         fractional_multiplier_dict[k] = removal_effect_dict[k] / weighting_denominator
-        markov_attributed_conversions[k] = round(fractional_multiplier_dict[k] * total_conversions)
+        markov_attributed_conversions[k] = fractional_multiplier_dict[k] * total_conversions
+        decimal_markov[k] = fractional_multiplier_dict[k] * total_conversions
     conv_dict.pop('conv', None)
     conv_dict.pop('null', None)
     conv_dict.pop('start', None)
-    return {'markov_conversions': markov_attributed_conversions,
+    conv_total = np.sum(list(conv_dict.values()))
+    max_val_markov = np.sum(list(markov_attributed_conversions.values()))
+    new_arr = []
+    for i in list(markov_attributed_conversions.values()):
+        new_arr.append((i/max_val_markov)*conv_total)
+    newdict = {}
+    i=0
+    for key in markov_attributed_conversions:
+        newdict[key]=new_arr[i]
+        i+=1
+    return {'markov_conversions': newdict,
+            'decimal_markov':decimal_markov,
             'removal_cvr': removal_cvr_dict,
+            'removal_effect_dict':removal_effect_dict,
             'last_touch_conversions': conv_dict,
             'transition_matrix': df,
-           'initial_cvr': initial_cvr}
+           'initial_cvr': initial_cvr,
+           'fractional_multiplier_dict':fractional_multiplier_dict}
