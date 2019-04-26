@@ -123,6 +123,7 @@ def first_order(paths, niter):
                                 'minus_' + row].tolist())
                         if change[change.index(">") + 1:] == row:
                             activityList.append("null")
+                            break
                         else:
                             activityNow = change[change.index(">") + 1:]
                             activityList.append(activityNow)
