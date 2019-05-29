@@ -109,6 +109,8 @@ def first_order(paths, niter):
     removal_cvr_dict = {}
 
     # Get the aggregate CVR upon setting a given channel's probability to 100% null
+    # e.g. run a simulation and if the simulated next step is our removal channel for
+    # this round then it always goes to NULL
     for row in unique_touch_list:
         if row != 'conv' and row != 'null' and row != 'start':
             print("Running simulations for removal of " + row)
