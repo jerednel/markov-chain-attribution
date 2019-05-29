@@ -124,8 +124,7 @@ def first_order(paths, niter):
                 activityNow = firstChannel[firstChannel.index(">") + 1:]
                 activityList.append(activityNow)
                 if activityNow == row:
-                    next
-                # activityList.append("null")
+                    activityList.append("null")
                 else:
                     while activityNow != 'conv' and activityNow != 'null':
                         change = np.random.choice(df[df['paths'].str.contains(activityNow + '>')]['paths'].tolist(),
