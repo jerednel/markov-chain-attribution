@@ -79,6 +79,7 @@ def first_order(paths, niter):
                        'prob': transMatrix})
     conv_sim_array = []
 
+    # Get the aggregate CVR via simulations before we start removing channels and calculating removal effect
     for iterations in range(1, numSimulations):
         activityList = ["start"]
         firstChannel = np.random.choice(df[df['paths'].str.contains("start>")]['paths'].tolist(), replace=True,
@@ -106,6 +107,8 @@ def first_order(paths, niter):
             df['minus_' + row] = np.where(df['paths'].str.contains(row + '>'), 0, df['prob'])
 
     removal_cvr_dict = {}
+
+    # Get the aggregate CVR upon setting a given channel's probability to 100% null
     for row in unique_touch_list:
         if row != 'conv' and row != 'null' and row != 'start':
             print("Running simulations for removal of " + row)
