@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import re
 
+
 def run_model(paths, niter):
     regex = re.compile('[^a-zA-Z> ]')
     paths.rename(columns={paths.columns[0]: "Paths"}, inplace=True)
@@ -9,13 +10,16 @@ def run_model(paths, niter):
     markov_conversions = first_order(paths, niter)
     return markov_conversions
 
+
 def first_order(paths, niter):
     paths = np.array(paths).tolist()
     sublist = []
+    total_paths = 0
     for path in paths:
         for touchpoint in path:
             userpath = touchpoint.split(' > ')
             sublist.append(userpath)
+        total_paths += 1
     paths = sublist
     unique_touch_list = np.unique([item for sublist in paths for item in sublist])
 
@@ -31,7 +35,7 @@ def first_order(paths, niter):
 
     numSimulations = niter
     transitionStates = {}
-
+    base_cvr = total_conversions / total_paths
     for x in unique_touch_list:
         for y in unique_touch_list:
             transitionStates[x + ">" + y] = 0
@@ -102,21 +106,23 @@ def first_order(paths, niter):
             df['minus_' + row] = np.where(df['paths'].str.contains(row + '>'), 0, df['prob'])
 
     removal_cvr_dict = {}
-    print(unique_touch_list)
     for row in unique_touch_list:
         if row != 'conv' and row != 'null' and row != 'start':
             print("Running simulations for removal of " + row)
 
             conv_sim_array = []
             # print("Starting new path sim")
+            iters = 0
             for iterations in range(1, numSimulations):
                 activityList = ["start"]
+                # prob_paths = df[(df['paths'].str.contains("start>")) & ~(df['paths'].str.contains(row))]['paths']
                 firstChannel = np.random.choice(df[df['paths'].str.contains("start>")]['paths'].tolist(), replace=True,
                                                 p=df[df['paths'].str.contains("start>")]['prob'].tolist())
                 activityNow = firstChannel[firstChannel.index(">") + 1:]
                 activityList.append(activityNow)
                 if activityNow == row:
-                    activityList.append("null")
+                    next
+                # activityList.append("null")
                 else:
                     while activityNow != 'conv' and activityNow != 'null':
                         change = np.random.choice(df[df['paths'].str.contains(activityNow + '>')]['paths'].tolist(),
@@ -129,50 +135,46 @@ def first_order(paths, niter):
                             activityNow = change[change.index(">") + 1:]
                             activityList.append(activityNow)
                 conv_sim_array.append(activityList)
-
-            #print(conv_sim_array)
+                iters += 1
+            # print(conv_sim_array)
             count = 0
             for smaller_list in conv_sim_array:
                 if (smaller_list[-1] == "conv"):
                     count += 1
-            cvr = float(count) / float(numSimulations)
+
+            cvr = float(count) / float(iters)
             removal_cvr_dict[row] = cvr
 
     weighting_denominator = 0.0000
     removal_effect_dict = {}
     for k in removal_cvr_dict:
-        removal_effect_dict[k] = removal_cvr_dict[k] / initial_cvr - 1
-        weighting_denominator += removal_cvr_dict[k] / initial_cvr - 1
-    removal_effect_dict = {k: 0 if v > 0 else v for k, v in removal_effect_dict.items() }
-    #print("initial CVR: %f" % (initial_cvr))
-    #print("Removal CVR Dict: %s" % (removal_cvr_dict))
-    #print("Weighing denominator: %f " % (weighting_denominator))
+        removal_effect_dict[k] = 1 - (removal_cvr_dict[k] / initial_cvr)  # removal_cvr_dict[k] / base_cvr - 1
+        weighting_denominator += removal_effect_dict[k]
+    # print("Removal CVR Dict: %s" % (removal_cvr_dict))
+    # print("Weighing denominator: %f " % (weighting_denominator))
     fractional_multiplier_dict = {}
     markov_attributed_conversions = {}
     decimal_markov = {}
     for k in removal_effect_dict:
-        #print(removal_effect_dict[k])
         fractional_multiplier_dict[k] = removal_effect_dict[k] / weighting_denominator
         markov_attributed_conversions[k] = fractional_multiplier_dict[k] * total_conversions
-        decimal_markov[k] = fractional_multiplier_dict[k] * total_conversions
+        """
+    print("Removal CVR")
+    print(removal_cvr_dict)
+    print("Removal Effects")
+    print(removal_effect_dict)
+    print("Fractional Multipliers")
+    print(fractional_multiplier_dict)
+    """
     conv_dict.pop('conv', None)
     conv_dict.pop('null', None)
     conv_dict.pop('start', None)
-    conv_total = np.sum(list(conv_dict.values()))
-    max_val_markov = np.sum(list(markov_attributed_conversions.values()))
-    new_arr = []
-    for i in list(markov_attributed_conversions.values()):
-        new_arr.append((i/max_val_markov)*conv_total)
-    newdict = {}
-    i=0
-    for key in markov_attributed_conversions:
-        newdict[key]=new_arr[i]
-        i+=1
-    return {'markov_conversions': newdict,
-            'decimal_markov':decimal_markov,
+
+    return {'markov_conversions': markov_attributed_conversions,
             'removal_cvr': removal_cvr_dict,
-            'removal_effect_dict':removal_effect_dict,
+            'removal_effect_dict': removal_effect_dict,
             'last_touch_conversions': conv_dict,
             'transition_matrix': df,
-           'initial_cvr': initial_cvr,
-           'fractional_multiplier_dict':fractional_multiplier_dict}
+            'initial_cvr': initial_cvr,
+            'fractional_multiplier_dict': fractional_multiplier_dict,
+            'unique_touch_list': unique_touch_list}
