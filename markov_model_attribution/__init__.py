@@ -3,15 +3,46 @@ import numpy as np
 import re
 
 
-def run_model(paths, niter):
+def run_model(paths):
     regex = re.compile('[^a-zA-Z> ]')
     paths.rename(columns={paths.columns[0]: "Paths"}, inplace=True)
     paths['Paths'] = paths['Paths'].apply(lambda x: regex.sub('', x))
-    markov_conversions = first_order(paths, niter)
+    markov_conversions = first_order(paths)
     return markov_conversions
 
 
-def first_order(paths, niter):
+def calculate_removals(df, base_cvr):
+    removal_effect_list = dict()
+    channels_to_remove = df.drop(['conv', 'null', 'start'], axis=1).columns
+    for channel in channels_to_remove:
+        removal_cvr_array = list()
+        removal_channel = channel
+        removal_df = df.drop(removal_channel, axis=1)
+        removal_df = removal_df.drop(removal_channel, axis=0)
+        for col in removal_df.columns:
+            one = float(1)
+            row_sum = np.sum(list(removal_df.loc[col]))
+            null_percent = one - row_sum
+            if null_percent == 0:
+                continue
+            else:
+                removal_df.loc[col]['null'] = null_percent
+        removal_df.loc['null']['null'] = 1.0
+        R = removal_df[['null', 'conv']]
+        R = R.drop(['null', 'conv'], axis=0)
+        Q = removal_df.drop(['null', 'conv'], axis=1)
+        Q = Q.drop(['null', 'conv'], axis=0)
+        t = len(Q.columns)
+
+        N = np.linalg.inv(np.identity(t) - np.asarray(Q))
+        M = np.dot(N, np.asarray(R))
+        removal_cvr = pd.DataFrame(M, index=R.index)[[1]].loc['start'].values[0]
+        removal_effect = 1 - removal_cvr / base_cvr
+        removal_effect_list[channel] = removal_effect
+    return removal_effect_list
+
+
+def first_order(paths):
     paths = np.array(paths).tolist()
     sublist = []
     total_paths = 0
@@ -33,7 +64,6 @@ def first_order(paths, niter):
             total_conversions += 1
             conv_dict[path[-2]] += 1
 
-    numSimulations = niter
     transitionStates = {}
     base_cvr = total_conversions / total_paths
     for x in unique_touch_list:
@@ -75,110 +105,56 @@ def first_order(paths, niter):
         for key in item:
             transMatrix.append(item[key])
 
-    df = pd.DataFrame({'paths': transState,
-                       'prob': transMatrix})
-    conv_sim_array = []
-
-    # Get the aggregate CVR via simulations before we start removing channels and calculating removal effect
-    for iterations in range(1, numSimulations):
-        activityList = ["start"]
-        firstChannel = np.random.choice(df[df['paths'].str.contains("start>")]['paths'].tolist(), replace=True,
-                                        p=df[df['paths'].str.contains("start>")]['prob'].tolist())
-        activityNow = firstChannel[firstChannel.index(">") + 1:]
-        activityList.append(activityNow)
-
-        while activityNow != 'conv' and activityNow != 'null':
-            change = np.random.choice(df[df['paths'].str.contains(activityNow + '>')]['paths'].tolist(), replace=True,
-                                      p=df[df['paths'].str.contains(activityNow + '>')]['prob'].tolist())
-            activityNow = change[change.index(">") + 1:]
-            activityList.append(activityNow)
-        conv_sim_array.append(activityList)
-
-    count = 0
-    for smaller_list in conv_sim_array:
-        if (smaller_list[-1] == "conv"):
-            count += 1
-    initial_cvr = float(count) / float(numSimulations)
-
-    # channel/tactic removal transition matrix
-    for row in unique_touch_list:
-        if row != 'conv' and row != 'null' and row != 'start':
-            # print(row)
-            df['minus_' + row] = np.where(df['paths'].str.contains(row + '>'), 0, df['prob'])
-
-    removal_cvr_dict = {}
-
-    # Get the aggregate CVR upon setting a given channel's probability to 100% null
-    # e.g. run a simulation and if the simulated next step is our removal channel for
-    # this round then it always goes to NULL
-    for row in unique_touch_list:
-        if row != 'conv' and row != 'null' and row != 'start':
-            print("Running simulations for removal of " + row)
-
-            conv_sim_array = []
-            # print("Starting new path sim")
-            iters = 0
-            for iterations in range(1, numSimulations):
-                activityList = ["start"]
-                # prob_paths = df[(df['paths'].str.contains("start>")) & ~(df['paths'].str.contains(row))]['paths']
-                firstChannel = np.random.choice(df[df['paths'].str.contains("start>")]['paths'].tolist(), replace=True,
-                                                p=df[df['paths'].str.contains("start>")]['prob'].tolist())
-                activityNow = firstChannel[firstChannel.index(">") + 1:]
-                activityList.append(activityNow)
-                if activityNow == row:
-                    activityList.append("null")
-                else:
-                    while activityNow != 'conv' and activityNow != 'null':
-                        change = np.random.choice(df[df['paths'].str.contains(activityNow + '>')]['paths'].tolist(),
-                                                  replace=True, p=df[df['paths'].str.contains(activityNow + '>')][
-                                'minus_' + row].tolist())
-                        if change[change.index(">") + 1:] == row:
-                            activityList.append("null")
-                            break
-                        else:
-                            activityNow = change[change.index(">") + 1:]
-                            activityList.append(activityNow)
-                conv_sim_array.append(activityList)
-                iters += 1
-            # print(conv_sim_array)
-            count = 0
-            for smaller_list in conv_sim_array:
-                if (smaller_list[-1] == "conv"):
-                    count += 1
-
-            cvr = float(count) / float(iters)
-            removal_cvr_dict[row] = cvr
-
-    weighting_denominator = 0.0000
-    removal_effect_dict = {}
-    for k in removal_cvr_dict:
-        removal_effect_dict[k] = 1 - (removal_cvr_dict[k] / initial_cvr)  # removal_cvr_dict[k] / base_cvr - 1
-        weighting_denominator += removal_effect_dict[k]
-    # print("Removal CVR Dict: %s" % (removal_cvr_dict))
-    # print("Weighing denominator: %f " % (weighting_denominator))
-    fractional_multiplier_dict = {}
-    markov_attributed_conversions = {}
-    decimal_markov = {}
-    for k in removal_effect_dict:
-        fractional_multiplier_dict[k] = removal_effect_dict[k] / weighting_denominator
-        markov_attributed_conversions[k] = fractional_multiplier_dict[k] * total_conversions
-        """
-    print("Removal CVR")
-    print(removal_cvr_dict)
-    print("Removal Effects")
-    print(removal_effect_dict)
-    print("Fractional Multipliers")
-    print(fractional_multiplier_dict)
-    """
+    tmatrix = pd.DataFrame({'paths': transState,
+                            'prob': transMatrix})
+    # unique_touch_list = model['unique_touch_list']
+    tmatrix = tmatrix.join(tmatrix['paths'].str.split('>', expand=True).add_prefix('channel'))[
+        ['channel0', 'channel1', 'prob']]
+    column = list()
+    for k, v in tmatrix.iterrows():
+        if v['channel0'] in column:
+            continue
+        else:
+            column.append(v['channel0'])
+    test_df = pd.DataFrame()
+    for col in unique_touch_list:
+        test_df[col] = 0.00
+        test_df.loc[col] = 0.00
+    for k, v in tmatrix.iterrows():
+        x = v['channel0']
+        y = v['channel1']
+        val = v['prob']
+        test_df.loc[x][y] = val
+    test_df.loc['conv']['conv'] = 1.0
+    test_df.loc['null']['null'] = 1.0
+    R = test_df[['null', 'conv']]
+    R = R.drop(['null', 'conv'], axis=0)
+    Q = test_df.drop(['null', 'conv'], axis=1)
+    Q = Q.drop(['null', 'conv'], axis=0)
+    O = pd.DataFrame()
+    t = len(Q.columns)
+    for col in range(0, t):
+        O[col] = 0.00
+    for col in range(0, len(R.columns)):
+        O.loc[col] = 0.00
+    N = np.linalg.inv(np.identity(t) - np.asarray(Q))
+    M = np.dot(N, np.asarray(R))
+    base_cvr = pd.DataFrame(M, index=R.index)[[1]].loc['start'].values[0]
+    removal_effects = calculate_removals(test_df, base_cvr)
+    denominator = np.sum(list(removal_effects.values()))
+    allocation_amount = list()
+    for i in removal_effects.values():
+        allocation_amount.append((i / denominator) * total_conversions)
+    # print(allocation_amount)
+    markov_conversions = dict()
+    i = 0
+    for channel in removal_effects.keys():
+        markov_conversions[channel] = allocation_amount[i]
+        i += 1
     conv_dict.pop('conv', None)
     conv_dict.pop('null', None)
     conv_dict.pop('start', None)
 
-    return {'markov_conversions': markov_attributed_conversions,
-            'removal_cvr': removal_cvr_dict,
-            'removal_effect_dict': removal_effect_dict,
+    return {'markov_conversions': markov_conversions,
             'last_touch_conversions': conv_dict,
-            'transition_matrix': df,
-            'initial_cvr': initial_cvr,
-            'fractional_multiplier_dict': fractional_multiplier_dict,
-            'unique_touch_list': unique_touch_list}
+            'removal_effects': removal_effects}
