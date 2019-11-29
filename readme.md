@@ -14,6 +14,7 @@ There is an amazing R package called ChannelAttribution which does this as well 
 To get started quickly you can install via pip.
 
 ### Installation
+Make sure your version is at least 0.4 - prior versions included suboptimal ways of generating our initial transition states that resulted in negative conversions in large datasets.
 ```#python
 pip install markov-model-attribution
 ```
