@@ -52,10 +52,7 @@ def first_order(paths):
             sublist.append(userpath)
         total_paths += 1
     paths = sublist
-<<<<<<< HEAD
-=======
- 
->>>>>>> 329f52a318dfd0d199b4cfc20721163eb66b4735
+
     unique_touch_list = set(x for element in paths for x in element)
     # get total last touch conversion counts
     conv_dict = {}
