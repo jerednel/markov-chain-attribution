@@ -52,8 +52,7 @@ def first_order(paths):
             sublist.append(userpath)
         total_paths += 1
     paths = sublist
-    unique_touch_list = np.unique([item for sublist in paths for item in sublist])
-
+    unique_touch_list = set(x for element in paths for x in element)
     # get total last touch conversion counts
     conv_dict = {}
     total_conversions = 0
@@ -157,4 +156,9 @@ def first_order(paths):
 
     return {'markov_conversions': markov_conversions,
             'last_touch_conversions': conv_dict,
-            'removal_effects': removal_effects}
+            'removal_effects': removal_effects,
+            'base_cvr': base_cvr,
+            'transition_matrix': test_df,
+            'absorption_matrix': M
+           }
+
