@@ -3,7 +3,7 @@
 
 This is a proof-of-concept I built out that leverages a first order Markov chain to reallocate conversions in the manner explained by [Anderl, Eva and Becker, Ingo and Wangenheim, Florian V. and Schumann, Jan Hendrik](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2343077) in " Mapping the Customer Journey: A Graph-Based Framework for Online Attribution Modeling"
 
-If this concept is new, check out the post on [markov chain attribution modeling](https://www.jnel.me/how-to-leverage-markov-chains-for-attribution/).   
+If this concept is new, check out the post on [markov chain attribution modeling](https://nelson.eu.org/how-to-use-markov-chains-for-attribution/).   
 
 Big thanks to people writing and commenting on this [AnalyzeCore article](https://analyzecore.com/2016/08/03/attribution-model-r-part-1/) for a very useful article and comment section.
 
@@ -14,6 +14,7 @@ There is an amazing R package called ChannelAttribution which does this as well 
 To get started quickly you can install via pip.
 
 ### Installation
+Make sure your version is at least 0.4 - prior versions included suboptimal ways of generating our initial transition states that resulted in negative conversions in large datasets.
 ```#python
 pip install markov-model-attribution
 ```
