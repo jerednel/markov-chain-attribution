@@ -76,7 +76,7 @@ def first_order(paths):
             for user_path in paths:
 
                 if possible_state in user_path:
-                    indices = [i for i, s in enumerate(user_path) if possible_state in s]
+                    indices = [i for i, s in enumerate(user_path) if possible_state == s]
                     for col in indices:
                         transitionStates[user_path[col] + ">" + user_path[col + 1]] += 1
 
@@ -86,7 +86,7 @@ def first_order(paths):
 
         if state != "null" and state != "conv":
             counter = 0
-            index = [i for i, s in enumerate(transitionStates) if state + '>' in s]
+            index = [i for i, s in enumerate(transitionStates) if s.startswith(state + '>')]
             for col in index:
                 if transitionStates[list(transitionStates)[col]] > 0:
                     counter += transitionStates[list(transitionStates)[col]]
