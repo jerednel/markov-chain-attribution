@@ -1,4 +1,4 @@
-
+ 
 ## Markov Chains for Attribution Modeling
 
 This is a proof-of-concept I built out that leverages a first order Markov chain to reallocate conversions in the manner explained by [Anderl, Eva and Becker, Ingo and Wangenheim, Florian V. and Schumann, Jan Hendrik](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2343077) in " Mapping the Customer Journey: A Graph-Based Framework for Online Attribution Modeling"
