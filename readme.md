@@ -3,7 +3,7 @@
 
 This is a proof-of-concept I built out that leverages a first order Markov chain to reallocate conversions in the manner explained by [Anderl, Eva and Becker, Ingo and Wangenheim, Florian V. and Schumann, Jan Hendrik](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2343077) in " Mapping the Customer Journey: A Graph-Based Framework for Online Attribution Modeling"
 
-If this concept is new, check out the post on [markov chain attribution modeling](https://tryexcept.hashnode.dev/building-an-attribution-model-with-markov-chains).   
+If this concept is new, check out the post on [markov chain attribution modeling](https://www.nelson.pm/markov-chain-attribution-model-python/).   
 
 Big thanks to people writing and commenting on this [AnalyzeCore article](https://analyzecore.com/2016/08/03/attribution-model-r-part-1/) for a very useful article and comment section.
 
