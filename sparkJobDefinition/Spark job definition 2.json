@@ -8,12 +8,12 @@
 		"scanFolder": false,
 		"jobProperties": {
 			"name": "Spark job definition 2",
-			"file": "",
+			"file": "abfss://k4sudlg2fs@k4sudlsg2.dfs.core.windows.net/wordcount.py",
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "54e3ccf4-24b9-4715-bacd-5a1446ba0770",
+				"spark.autotune.trackingId": "db275525-4517-413a-8fe4-ff80d364b337",
 				"spark.synapse.context.sjdname": "Spark job definition 2"
 			},
 			"args": [],
