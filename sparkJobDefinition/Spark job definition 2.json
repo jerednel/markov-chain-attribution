@@ -1,0 +1,28 @@
+{
+	"name": "Spark job definition 2",
+	"properties": {
+		"targetBigDataPool": {
+			"type": "BigDataPoolReference"
+		},
+		"language": "python",
+		"scanFolder": false,
+		"jobProperties": {
+			"name": "Spark job definition 2",
+			"file": "",
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "54e3ccf4-24b9-4715-bacd-5a1446ba0770",
+				"spark.synapse.context.sjdname": "Spark job definition 2"
+			},
+			"args": [],
+			"jars": [],
+			"pyFiles": [
+				""
+			],
+			"files": [],
+			"numExecutors": 2
+		}
+	}
+}
