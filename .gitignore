@@ -1,7 +1,10 @@
 .idea
-/build/lib/markov_model_attribution/
+/build/
 /markov_model_attribution.egg-info/
 /dist/
 .DS_Store
-setup.py
-setup.cfg
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/

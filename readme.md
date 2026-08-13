@@ -14,15 +14,28 @@ There is an amazing R package called ChannelAttribution which does this as well 
 To get started quickly you can install via pip.
 
 ### Installation
-Make sure your version is at least 0.4 - prior versions included suboptimal ways of generating our initial transition states that resulted in negative conversions in large datasets.
 ```#python
 pip install markov-model-attribution
 ```
 
+Tested against pandas 1.5, 2.0, 2.2 and 3.0.
+
+> **Upgrading from 0.4 or earlier?** Those versions relied on pandas chained
+> assignment (`df.loc[x][y] = val`), which stopped writing through in pandas 2.0.
+> On any pandas newer than 1.5 they returned an all-zero transition matrix and
+> `nan` for every conversion and removal effect, silently. If you are on pandas
+> 2.0+, upgrade. Two behaviour changes come with the fix — see
+> [Breaking changes](#breaking-changes).
+
 ### Use
-* This package currently accepts a single-column Pandas dataframe. 
+* This package accepts a single-column Pandas dataframe (or a Series).
 * Each path should begin with "start" and end with either "conv" or "null".
 * Each path should be delimited by " > "
+* Channel names may contain anything except the ">" delimiter.
+* Your dataframe is not modified.
+
+Paths that violate these rules raise a `ValueError` naming the offending row,
+rather than failing later inside the linear algebra.
 
 The argument to pass is ```paths```, where paths is the Pandas dataframe containing your paths.
 
@@ -63,4 +76,29 @@ You can also access the removal effect matrix of the underlying result.
 print(model['removal_effects'])
 
 # {'cone': 0.5, 'cthree': 1.0, 'ctwo': 1.0}
+```
+
+The full transition matrix and absorption probabilities are also available via
+`model['transition_matrix']` and `model['absorption_matrix']`.
+
+### Breaking changes
+
+**Channel names are no longer stripped.** Earlier versions ran every path
+through `re.sub('[^a-zA-Z> ]', '', path)`, which silently deleted digits,
+underscores and hyphens. `c1` and `c2` both became `c` and were merged into a
+single channel; `email_promo_2024` became `emailpromo`. Names are now used
+verbatim, so results will change for any dataset whose channel names contain
+characters outside `a-z`. This is the intended behaviour, but it is a change —
+compare against a previous run before you trust the delta.
+
+**Input is now validated.** Paths that are missing `start`, missing a terminal
+`conv`/`null`, or that place a reserved state mid-path now raise instead of
+producing an `IndexError` or a quietly wrong number. Multi-column dataframes
+raise rather than double-counting.
+
+### Development
+
+```#python
+pip install pytest
+python -m pytest tests/
 ```
